@@ -1,0 +1,10 @@
+extends layout
+  
+block content
+  title chart
+
+  body
+    ul#logHistory.list-group Log History
+      each log in logRecords
+        li.list-group-item(type='String')
+  script(src= '/js/logHistory.js')

@@ -1,0 +1,21 @@
+extends layout
+
+block content
+  style.
+    label{
+      margin-top:5px;
+    }
+  .container
+    .row
+      .col-lg-4.offset-lg-4.col-md-6.offset-md-3.col-sm-8.offset-sm-2.col-xs-12
+        h1 Login  
+        form(method='POST', action='/users/login')
+          #form-group
+            label Username:
+            input.form-control(name='username',type='text')
+          #form-group
+            label Password:
+            input.form-control(name='password',type='password')
+          br
+          input.btn.btn-primary(type='submit',value='Submit')
+          

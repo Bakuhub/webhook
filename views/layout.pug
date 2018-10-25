@@ -1,0 +1,47 @@
+doctype html
+html
+  head
+    title DEMO
+    link(rel="stylesheet" href="/bootstrap-4.0.0/dist/css/bootstrap.min.css"  crossorigin="anonymous")
+    link(rel='stylesheet' href='/css/style.css')
+    script(src="/js/jquery-3.3.1.min.js")
+    script(src="/js/utils.js")
+    script(src="/js/Chart.bundle.js")
+    script(src="/bower_components/select2/dist/js/select2.full.min.js")
+    link(href="/bower_components/select2/dist/css/select2.min.css" rel="stylesheet")
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1, shrink-to-fit=no')
+  body
+    nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
+      if user
+        a.navbar-brand(href='/users/logout') Logout
+      else  
+        a.navbar-brand(href='/users/login') Login
+      button.navbar-toggler(type="button" data-toggle="collapse" data-target="#navbars" aria-controls='navbars' aria-expand='false' aria-label="Toggle navigation")
+        span.navbar-toggler-icon
+      #navbars.collapse.navbar-collapse
+        ul.navbar-nav.mx-auto
+          li.nav-item
+            a.nav-link(href='/logHistory') Log History
+          li.nav-item
+            a.nav-link(href='/chartHistory') Chart History
+          if user
+            li.nav-item
+              a.nav-link(href='/Submit') Record Submit
+          else
+            li.nav-item
+              a.nav-link(href='/users/register') Register
+
+    .container
+      != messages('message', locals)
+      if errors
+        each error, i in errors
+          div(class="alert alert-danger") #{error.msg}
+      block content
+      br
+      hr
+      footer
+    script(src="/bootstrap-4.0.0/assets/js/vendor/popper.min.js")
+    script(src="/bootstrap-4.0.0/dist/js/bootstrap.min.js")
+
+          

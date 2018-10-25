@@ -1,0 +1,33 @@
+extends layout
+  
+block content
+  title chart
+  style.
+    h5{
+      color:white;
+    }
+  body
+    if user
+      div#statusBar.alert.alert-warning= "Welcome back," + user.username 
+      div.row
+        .col-lg-4.offset-lg-4.col-md-6.offset-md-3.col-sm-8.offset-sm-2.col-xs-12
+            br
+            h6.alert.alert-dark= 'Log in as: ' + user.username
+            br
+            form#Add_Record
+              label Reciver:
+              select.form-control.form-control-lg#reciver(name = 'reciver')
+                each i in users
+                  option(type ='String', value= i )= i
+              
+              br
+              h5 ............................................................                            
+              input.btn.btn-lg.btn-danger#submit(type='submit',value='Submit')
+              br
+    else
+        h1 please log in first
+    script(src="/js/submit.js")
+   
+
+
+              

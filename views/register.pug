@@ -1,0 +1,185 @@
+extends layout
+
+block content
+  style.
+    /* Style all input fields */
+
+    /* The message box is shown when the user clicks on the password field */
+    label{
+      margin-top:5px;
+    }
+        #message {
+            display:none;
+    }
+        #letter, #SpecialChar, #capital, #number , #statusBar, #submitBar, #pswBar{
+          font-size:10px;
+          margin:2px;
+          padding:7px;
+        }
+    /* Add a green text color and a checkmark when the requirements are right */
+    .valid {
+        color: green;
+    }
+
+    .valid:before {
+        position: relative;
+        left: -5px;
+        content: "✔";
+    }
+
+    /* Add a red text color and an "x" when the requirements are wrong */
+    .invalid {
+        color: red;
+    }
+    
+    .invalid:before {
+        position: relative;
+        left: -5px;
+        content: "✖";
+    }
+  .container
+    .row
+      .col-lg-4.offset-lg-4.col-md-6.offset-md-3.col-sm-8.offset-sm-2.col-xs-12
+        h1 Register
+ 
+        form(method='POST', action='/users/register')
+          #form-group
+            label Username:
+            input#username.form-control(name='username',type='string')
+            div#statusBar.alert.alert-warning
+          #form-group
+            label Password:
+            input#psw.form-control(name='password',type='password',pattern='(?=.*[^a-zA-Z0-9\-\/])(?=.*[a-z])(?=.*[A-Z]).{4,}')
+          #message
+            div Password must contain the following:
+            p#letter.invalid.alert.alert-warning
+              | A 
+              b lowercase
+              |  letter
+            p#capital.invalid.alert.alert-warning
+              | A 
+              b capital (uppercase)
+              |  letter
+            p#number.invalid.alert.alert-warning
+              | A 
+              b number
+            p#SpecialChar.invalid.alert.alert-warning
+              | Minimum 
+              b contain at least one special character
+          #form-group
+            label Confirm:
+            input#psw2.form-control(name='password2',type='password')
+          br
+          div#pswBar.alert.alert-warning
+          input.btn.btn-primary(type='submit',value='Register',disabled)
+          div#submitBar.alert.alert-warning
+  script.
+      var validation = [1,1,1];
+      $('#statusBar').hide();
+      $('#pswBar').hide();
+    var myInput = document.getElementById("psw");
+    var letter = document.getElementById("letter");
+    var capital = document.getElementById("capital");
+    var number = document.getElementById("number");
+    var specialChar = document.getElementById('SpecialChar');
+
+    // When the user clicks on the password field, show the message box
+    myInput.onfocus = function() {
+      document.getElementById("message").style.display = "block";
+    }
+
+    // When the user clicks outside of the password field, hide the message box
+    myInput.onblur = function() {
+      document.getElementById("message").style.display = "none";
+    }
+
+    // When the user starts to type something inside the password field
+    myInput.onkeyup = function() {
+      // Validate lowercase letters
+      var lowerCaseLetters = /[a-z]/g;
+      if(myInput.value.match(lowerCaseLetters)) { 
+        letter.classList.remove("invalid");
+        letter.classList.add("valid");
+      } else {
+        letter.classList.remove("valid");
+        letter.classList.add("invalid");
+    }
+
+      // Validate capital letters
+      var upperCaseLetters = /[A-Z]/g;
+      if(myInput.value.match(upperCaseLetters)) { 
+        capital.classList.remove("invalid");
+        capital.classList.add("valid");
+      } else {
+        capital.classList.remove("valid");
+        capital.classList.add("invalid");
+      }
+
+      // Validate numbers
+      var numbers = /[0-9]/g;
+      if(myInput.value.match(numbers)) { 
+        number.classList.remove("invalid");
+        number.classList.add("valid");
+      } else {
+        number.classList.remove("valid");
+        number.classList.add("invalid");
+      }
+      //
+      var specialChars = /[^a-zA-Z0-9\-\/]/g;
+      if(myInput.value.match(specialChars)) { 
+        specialChar.classList.remove("invalid");
+        specialChar.classList.add("valid");
+      } else {
+        specialChar.classList.remove("valid");
+        specialChar.classList.add("invalid");
+      }
+
+    }
+    $('#submitBar').hide();
+    $('#username').blur((e)=>{
+                  e.preventDefault(); 
+        $.ajax({
+          type: "GET",
+          url: "/usercheck",
+          data: $("#username").val(),
+          success:function(e){ 
+         
+            endMsg($('#statusBar'),e);
+            if(e ==='username can be registered'){
+                 validation[0] = 0;
+        
+            }else{
+                 validation[0] = 1;
+    
+            }
+          }                      
+      });
+    });
+    $('#psw2').keyup((e)=>{
+      if($('#psw2').val()===$('#psw').val()){
+        $('#pswBar').show();
+        $('#pswBar').html('password matched');
+         validation[2]=0;
+         
+        setTimeout(()=>{ $('#pswBar').hide();},5000);
+      }else{
+          $('#pswBar').show();
+          validation[2] = 1;
+      
+        $('#pswBar').html('password didnt matched');
+      }
+    });
+      setInterval(()=>{
+      if($("p").hasClass('invalid')){
+        validation[1]=1;
+      }else{validation[1] = 0;}},200);
+
+    setInterval(()=>{if (validation[0]===0&&validation[2]===0&&validation[1]===0){
+      $('.btn').prop('disabled',false);
+    }else{$('.btn').prop('disabled',true);
+    }},700);
+    
+    function endMsg(el,i){
+         el.show();
+         el.html(i);
+      }

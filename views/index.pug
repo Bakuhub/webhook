@@ -1,0 +1,247 @@
+extends layout
+  
+block content
+  title chart
+
+  body
+    if user
+      div#statusBar.alert.alert-warning= "Welcome back," + user.username 
+    else
+       div#statusBar.alert.alert-warning
+    div.container
+      div.row
+        div.col-lg-3.col.md-2.col.sm-10.col-sx-10
+          if user 
+            form#Add_Record
+              label Sender:
+              select.form-control.form-control-lg#sender(name='sender', readonly)
+                option(type = 'String', value = user.username)= user.username
+                    //-input#sender(type='String',name = 'sender',value = user.username)
+              label Reciver:
+              select.form-control.form-control-lg#reciver(name = 'reciver')
+                each i in users
+                  option(type ='String', value= i )= i
+              br
+              input.btn.btn-lg.btn-danger#submit(type='submit',value='Submit')
+              br
+          form#date_form
+            label StartDate:
+            input.form-control#startDate(type='date', name='startDate')
+            br
+            label EndDate:
+            Input.form-control#endDate(type='date', name = 'endDate')
+            br
+            input.btn.btn-lg.btn-primary#chartSubmit(type = 'submit', value = 'Submit')
+        .col-lg-9.col.md-10.col.sm-12.col-sx-12
+          canvas#chart-area  
+          br
+          br
+          canvas#chart-area2
+    ul#logHistory.list-group.list-group-flush Log History
+      each log in logRecords
+        li.list-group-item(type='String')
+
+    script.
+      $('#statusBar').hide();
+      var canvas = document.getElementById('chart-area');
+      var canvas2 = document.getElementById('chart-area2');
+      var ctx = document.getElementById("chart-area").getContext("2d");
+      var ctx2 = document.getElementById("chart-area2").getContext("2d");
+
+      function statMsg(i){
+        $('#statusBar').show();
+        $('#statusBar').html(i);
+      }
+      function endMsg(i){
+         $("#statusBar").show();
+          $("#statusBar").html(i);
+                setTimeout(()=>{
+                  $('#statusBar').hide();
+                },5000);
+      }
+      
+      var config = {
+        type: 'pie',
+        data: {
+              datasets: [{
+                data: [],
+                backgroundColor: [],
+                label: 'Pie'
+              }],
+                labels: []
+              },
+        options: {
+        responsive: true
+        }
+        };
+         var barConfig= {
+        type: 'horizontalBar',
+        data: {
+          //need to insert names
+          labels: [],
+          datasets: [
+            {
+              label: "ppt",
+              //push random color with value
+              backgroundColor: [],
+              //push Object.value to data 
+              data: [],
+            }
+          ]
+        },
+        options: {
+                  scales: {
+                xAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            },
+          legend: { display: false },
+          title: {
+            display: true,
+            text: ''
+          }
+        }
+        }
+
+      function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+        }
+          return color;
+      }
+
+      //init pie chart
+      function chartInit (chartData){
+         var data = config.data.datasets[0]['data'];
+          var backgroundColor = config.data.datasets[0]['backgroundColor'];
+          var labels = config.data.labels;
+           var barData = barConfig.data.datasets[0]['data'];
+           var barBackgroundColor = barConfig.data.datasets[0]['backgroundColor'];
+           var barLabels = barConfig.data.labels;
+                var change =[data , backgroundColor , labels, barData,barBackgroundColor,barLabels];
+        for(var k = 0; k<change.length; k++){
+          if (change[k]!==undefined){
+              change[k].length=0;}};
+      for (var i = 0 ; i < Object.values(chartData).length ; i++){
+            var color = getRandomColor();
+          data.push(Object.values(chartData)[i]);
+         backgroundColor.push(color);
+          labels.push(Object.keys(chartData)[i]);
+             barData.push(Object.values(chartData)[i]);
+         barBackgroundColor.push(color);
+          barLabels.push(Object.keys(chartData)[i]);
+      }}
+      var temp1;
+      var temp2;
+        $('#chartSubmit').click((e)=>{
+        statMsg('Creating Charts');
+          if($('#startDate').val()==''){
+            endMsg('plz input startDate');
+            return;
+          }
+           if($('#endDate').val()==''){
+            endMsg('plz input endDate');
+            return;
+          }
+
+          if($('#startDate').val()>$('#endDate').val()){
+            endMsg('invalid date');
+            return;
+          }
+          {
+            $.ajax({
+            type: "POST",
+            url: "/selectPeriod",
+            data: $("#date_form").serialize(),
+            success:function(e){
+              console.log(myPie);
+                 if(temp1!==undefined&&temp2!==undefined){
+                   temp1.destroy();
+                   console.log('clear');
+                   temp2.destroy();
+                 }
+     
+              var chartData = e;
+              if(Object.keys(chartData).length === 0 && chartData.constructor === Object){
+                endMsg('Sry, there is no data during selected Period');
+              }else{
+ 
+            //init
+                
+                chartInit(chartData);
+                
+                console.log(temp1);
+                barConfig.options.title.text='Bar Chart During ' + $('#startDate').val() +' to ' +$('#endDate').val();
+                var myPie = new Chart(ctx, config);
+                var myBar = new Chart(ctx2, barConfig);
+                temp1 = myPie;
+                temp2 = myBar;
+                endMsg('Chart completed');}
+              }
+          })
+        }
+        e.preventDefault();
+      });
+    
+      $('#submit').click((e)=>{
+        
+           statMsg('Submiting Request.');
+           setTimeout(statMsg('Submit Request..'),1000);
+           setTimeout(statMsg('Submit Request...'),1000);
+              e.preventDefault(); 
+        $.ajax({
+          type: "POST",
+          url: "/addRecord",
+          data: $("#Add_Record").serialize(),
+          success:function(e){ 
+           
+               endMsg(e);
+          }
+                      
+      });
+
+      });
+      setInterval(()=>{
+        $.ajax({
+          type:'GET',
+          url:'/update',
+          success:function(e){
+            let logRecords = e.logRecords;
+            
+            for(var j=0; j < 10 ; j ++){
+              let temp =(Date.now()-Date.parse(logRecords[j].date));
+              temp = temp /1000;
+              var  temp1;
+              
+              if(temp/12/30/24/60/60>=1){
+                temp1 = "more than one years ago";
+                    }else{
+                      if(temp/30/24/60/60>=1){
+                        temp1 = Math.round(temp/30/24/60/60) +'months ago';
+                      }else{
+                        if(temp/24/60/60>=1){
+                          temp1 = Math.round(temp/24/60/60) + 'days ago';
+                        }else{
+                          if(temp/60/60>=1){
+                            temp1 = Math.round(temp/60/60)+'hours ago';
+                          }else{
+                            if(temp/60>=1){
+                              temp1 = Math.round(temp/60)+'minutes ago';
+                            }else{
+                              temp1 = Math.round(temp) +'seconds ago';
+                            }
+                          }
+                        }
+                      }
+                    }
+            $('#logHistory>li').eq(j).html(logRecords[j].sender +' gives ' + logRecords[j].reciver +' a ++ ' + temp1 + '.');
+          }
+        }});},10);
+
+
+
+      

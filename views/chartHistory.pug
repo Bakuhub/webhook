@@ -1,0 +1,30 @@
+extends layout
+  
+block content
+  title chart
+
+  body
+
+    div.container
+        if user
+          div#statusBar.alert.alert-warning= "Welcome back," + user.username 
+        else
+          div#statusBar.alert.alert-warning
+        div.row
+          form#date_form.col-lg-3.col.md-2.col.sm-12.col-sx-12
+            br
+            label StartDate:
+            input.form-control#startDate(type='date', name='startDate')
+            br
+            label EndDate:
+            Input.form-control#endDate(type='date', name = 'endDate')
+            br
+            input.btn.btn-lg.btn-primary#chartSubmit(type = 'submit', value = 'Submit')
+          .col-lg-9.col.md-10.col.sm-12.col-sx-12
+            canvas#chart-area  
+            br
+            canvas#chart-area2
+    
+
+    script(src = "/js/chartHistory.js")
+    
